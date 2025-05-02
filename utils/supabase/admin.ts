@@ -234,6 +234,11 @@ const manageSubscriptionStatusChange = async (
   const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
     expand: ["default_payment_method"],
   });
+
+  const product = await stripe.products.retrieve(
+    subscription.items.data[0].price.product as string,
+  );
+
   // Upsert the latest status of the subscription object.
   const subscriptionData: TablesInsert<"subscriptions"> = {
     id: subscription.id,
@@ -252,10 +257,10 @@ const manageSubscriptionStatusChange = async (
       ? toDateTime(subscription.canceled_at).toISOString()
       : null,
     current_period_start: toDateTime(
-      subscription.current_period_start,
+      subscription.items.data[0].current_period_start,
     ).toISOString(),
     current_period_end: toDateTime(
-      subscription.current_period_end,
+      subscription.items.data[0].current_period_end,
     ).toISOString(),
     created: toDateTime(subscription.created).toISOString(),
     ended_at: subscription.ended_at
@@ -280,36 +285,6 @@ const manageSubscriptionStatusChange = async (
     `Inserted/updated subscription [${subscription.id}] for user [${uuid}]`,
   );
 
-  // For a new subscription copy the billing details to the customer object.
-  // NOTE: This is a costly operation and should happen at the very end.
-  if (createAction && subscription.default_payment_method && uuid)
-    //@ts-ignore
-    await copyBillingDetailsToCustomer(
-      uuid,
-      subscription.default_payment_method as Stripe.PaymentMethod,
-    );
-};
-
-const manageInvoicePaid = async (
-  subscriptionId: string,
-  customerId: string,
-) => {
-  // Get customer's UUID from mapping table.
-  const { data: customerData, error: noCustomerError } = await supabaseAdmin
-    .from("customers")
-    .select("id")
-    .eq("stripe_customer_id", customerId)
-    .single();
-  if (noCustomerError) throw noCustomerError;
-
-  const { id: uuid } = customerData!;
-
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
-    expand: ["default_payment_method"],
-  });
-  const product = await stripe.products.retrieve(
-    subscription.items.data[0].price.product as string,
-  );
   let yearQuota = 120;
   let monthQuota = 10;
 
@@ -321,25 +296,33 @@ const manageInvoicePaid = async (
       yearQuota = 240;
       monthQuota = 20;
     }
-  } else {
-    return;
   }
-  // Upsert the latest status of the subscription object.
-  const userData: Database["public"]["Tables"]["users"]["Update"] = {
-    write_gpt4_quota:
-      subscription.items.data[0].plan.interval === "year"
-        ? yearQuota
-        : monthQuota,
-  };
 
-  const { error } = await supabaseAdmin
-    .from("users")
-    .update(userData)
-    .eq("id", uuid);
-  if (error) throw error;
-  console.log(`Updated user ${uuid}.`);
+  if (subscription.status === "active") {
+    // Upsert the latest status of the subscription object.
+    const userData: Database["public"]["Tables"]["users"]["Update"] = {
+      write_gpt4_quota:
+        subscription.items.data[0].plan.interval === "year"
+          ? yearQuota
+          : monthQuota,
+    };
+
+    const { error } = await supabaseAdmin
+      .from("users")
+      .update(userData)
+      .eq("id", uuid);
+    if (error) throw error;
+    console.log(`Updated user ${uuid}.`);
+  }
+  // For a new subscription copy the billing details to the customer object.
+  // NOTE: This is a costly operation and should happen at the very end.
+  if (createAction && subscription.default_payment_method && uuid)
+    //@ts-ignore
+    await copyBillingDetailsToCustomer(
+      uuid,
+      subscription.default_payment_method as Stripe.PaymentMethod,
+    );
 };
-
 export {
   upsertProductRecord,
   upsertPriceRecord,
@@ -347,5 +330,4 @@ export {
   deletePriceRecord,
   createOrRetrieveCustomer,
   manageSubscriptionStatusChange,
-  manageInvoicePaid,
 };
