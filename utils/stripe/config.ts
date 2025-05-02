@@ -10,7 +10,7 @@ export const stripe = new Stripe(
     // https://stripe.com/docs/building-plugins#setappinfo
     appInfo: {
       name: "GRP Account",
-      version: "2.1.4",
+      version: "2.2.0",
       url: "https://github.com/peyronnet-group/account",
     },
   },
