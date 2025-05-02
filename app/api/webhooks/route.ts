@@ -2,7 +2,6 @@ import { stripe } from "@/utils/stripe/config";
 import {
   deletePriceRecord,
   deleteProductRecord,
-  manageInvoicePaid,
   manageSubscriptionStatusChange,
   upsertPriceRecord,
   upsertProductRecord,
@@ -76,12 +75,6 @@ export async function POST(req: Request) {
               true,
             );
           }
-          break;
-        case "invoice.paid":
-          const invoice = event.data.object as Stripe.Invoice;
-          const sub = invoice.subscription as string;
-
-          await manageInvoicePaid(sub, invoice.customer as string);
           break;
         default:
           throw new Error("Unhandled relevant event!");

@@ -5,13 +5,12 @@ export const stripe = new Stripe(
   {
     // https://github.com/stripe/stripe-node#configuration
     // https://stripe.com/docs/api/versioning
-    // @ts-ignore
-    apiVersion: "2024-09-30.acacia",
+    apiVersion: "2025-04-30.basil",
     // Register this as an official Stripe plugin.
     // https://stripe.com/docs/building-plugins#setappinfo
     appInfo: {
       name: "GRP Account",
-      version: "2.1.4",
+      version: "2.2.0",
       url: "https://github.com/peyronnet-group/account",
     },
   },
