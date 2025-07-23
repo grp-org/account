@@ -32,7 +32,7 @@
     "react": "^19",
     "react-cookie": "^7.2.2",
     "react-dom": "^19",
-    "react-i18next": "^15.6.0",
+    "react-i18next": "^15.6.1",
     "simplex-noise": "^4.0.3",
     "stripe": "^18.3.0",
     "tailwind-merge": "^3.3.1",
