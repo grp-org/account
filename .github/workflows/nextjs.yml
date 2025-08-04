@@ -3,14 +3,14 @@ on:
   push:
   pull_request:
     branches:
-      - main  # This will trigger the workflow on pull requests targeting the main branch
+      - main # This will trigger the workflow on pull requests targeting the main branch
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Create .env with Github Secrets
         run: |
           touch .env
@@ -26,9 +26,9 @@ jobs:
           ENV_VAR_4: ${{ secrets.STRIPE_SECRET_KEY }}
           ENV_VAR_5: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
 
       - name: Install dependencies
         run: npm install
