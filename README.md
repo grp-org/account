@@ -35,7 +35,6 @@ Follow these steps to set up the project locally:
    ```
 
 3. Set up your environment variables:
-
    - Create a `.env.local` file in the root directory.
    - Add the following environment variables:
      ```
