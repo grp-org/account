@@ -23,12 +23,17 @@ export default async function PricingPage({
 
   return (
     <>
-      <Pricing
+      <section className="p-10">
+        <h2 className="text-xl font-bold">
+          Synapsy products are no longer available.
+        </h2>
+      </section>
+      {/* <Pricing
         lng={lng}
         user={user}
         products={products}
         subscriptions={subscriptions}
-      />
+      /> */}
       <SiteFooter lng={lng} />
     </>
   );
